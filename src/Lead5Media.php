@@ -10,22 +10,30 @@ class Lead5Media
 
 	protected $method_map = [
 		'setCid'	=> 'CID',
+		'setChid'	=> 'CHID',
 		'setQuery'	=> 'q',
 		'setLocation'	=> 'l',
 		'setRadius'	=> 'r',
 		'setStart'	=> 'start',
 		'setLimit'	=> 'limit',
 		'setFormat'	=> 'format',
+		'setHighlight'	=> 'highlight',
+		'setSorting'	=> 's',
+		'setAge'		=> 'a',
 	];
 
 	protected $query_parameters = [
 		'CID'		=> null,
+		'CHID'		=> null,
 		'format'	=> 'json',
 		'q'			=> null,
 		'l'			=> null,
 		'r'			=> null,
 		'start'		=> 0,
-		'limit'		=> 10
+		'limit'		=> 10,
+		'highlight'	=> 'off',
+		's'			=> 'relevance',
+		'a'			=> null,
 	];
 
 	protected $client;
@@ -70,6 +78,26 @@ class Lead5Media
 	public function setFormat($format)
 	{
 		return $this->setQueryParameter('format', $format);
+	}
+
+	public function setChid($chid)
+	{
+		return $this->setQueryParameter('CHID', $chid);
+	}
+
+	public function setHighlight($highlight)
+	{
+		return $this->setQueryParameter('highlight', $highlight);
+	}
+
+	public function setSorting($sorting)
+	{
+		return $this->setQueryParameter('s', $sorting);
+	}
+
+	public function setAge($age)
+	{
+		return $this->setQueryParameter('a', $age);
 	}
 
 	public function getQueryParameters()
