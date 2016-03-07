@@ -62,7 +62,7 @@ class Lead5Media
 
 	public function setRadius($radius)
 	{
-		return $this->setQueryParameter('j', $radius);
+		return $this->setQueryParameter('r', $radius);
 	}
 	
 	public function setStart($start)
