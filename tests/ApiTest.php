@@ -30,7 +30,7 @@ class ApiTest extends TestCase
     public function it_can_set_limit()
     {
         $this->mock->shouldReceive('request')->once()->andReturn(
-            new Stubs\ResponseStub('{"jobs": ["test"]}')
+            new Stubs\ResponseStub('[{"response": {"results": ["test"]}}]')
         );
         $this->provider->get(3);
 
@@ -55,11 +55,7 @@ class ApiTest extends TestCase
      */
     protected function provider()
     {
-        return new Lead5Media([
-            'id'    => 'test',
-            'pass'  => 'test',
-            'ip'    => 'test'
-        ], $this->mock);
+        return new Lead5Media('client-cid', $this->mock);
     }
 
     protected function mock()

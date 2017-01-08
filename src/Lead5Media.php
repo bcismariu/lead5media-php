@@ -100,10 +100,12 @@ class Lead5Media
      */
     protected function resultsAreValid($results)
     {
-        return true;
-        return is_object($results)
-            && isset($results->jobs)
-            && is_array($results->jobs)
+        return is_array($results)
+            && isset($results[0])
+            && isset($results[0]->response)
+            && is_object($results[0]->response)
+            && isset($results[0]->response->results)
+            && is_array($results[0]->response->results)
         ;
     }
 
