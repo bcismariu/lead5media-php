@@ -6,123 +6,127 @@ use GuzzleHttp;
 
 class Lead5Media
 {
-	protected $base_url = 'http://api.l5srv.net/job_search/api/direct_email/find_jobs.srv';
+    protected $base_url = 'http://api.l5srv.net/job_search/api/direct_email/find_jobs.srv';
 
-	protected $method_map = [
-		'setCid'	=> 'CID',
-		'setChid'	=> 'CHID',
-		'setQuery'	=> 'q',
-		'setLocation'	=> 'l',
-		'setRadius'	=> 'r',
-		'setStart'	=> 'start',
-		'setLimit'	=> 'limit',
-		'setFormat'	=> 'format',
-		'setHighlight'	=> 'highlight',
-		'setSorting'	=> 's',
-		'setAge'		=> 'a',
-	];
+    protected $method_map = [
+        'setCid'    => 'CID',
+        'setChid'    => 'CHID',
+        'setQuery'    => 'q',
+        'setLocation'    => 'l',
+        'setRadius'    => 'r',
+        'setStart'    => 'start',
+        'setLimit'    => 'limit',
+        'setFormat'    => 'format',
+        'setHighlight'    => 'highlight',
+        'setSorting'    => 's',
+        'setAge'        => 'a',
+    ];
 
-	protected $query_parameters = [
-		'CID'		=> null,
-		'CHID'		=> null,
-		'format'	=> 'json',
-		'q'			=> null,
-		'l'			=> null,
-		'r'			=> null,
-		'start'		=> 0,
-		'limit'		=> 10,
-		'highlight'	=> 'off',
-		's'			=> 'relevance',
-		'a'			=> null,
-	];
+    protected $query_parameters = [
+        'CID'        => null,
+        'CHID'        => null,
+        'format'    => 'json',
+        'q'            => null,
+        'l'            => null,
+        'r'            => null,
+        'start'        => 0,
+        'limit'        => 10,
+        'highlight'    => 'off',
+        's'            => 'relevance',
+        'a'            => null,
+    ];
 
-	protected $client;
+    protected $client;
 
-	public function __construct($cid)
-	{
-		$this->setCid($cid);
-		$this->client = new GuzzleHttp\Client();
-	}
+    public function __construct($cid, GuzzleHttp\ClientInterface $client = null)
+    {
+        $this->setCid($cid);
 
-	public function get()
-	{
-		$response = $this->request();
-		return json_decode(utf8_encode(trim($response->getBody()->getContents())));
-	}
+        if (!$client) {
+            $client = new GuzzleHttp\Client();
+        }
+        $this->client = $client;
+    }
 
-	public function setQuery($query)
-	{
-		return $this->setQueryParameter('q', $query);
-	}
+    /**
+     * magic method to set query parameters
+     * @param  string $method     
+     * @param  array $parameters 
+     * @return self
+     */
+    public function __call($method, $parameters)
+    {
+        if (!isset($this->method_map[$method])) {
+            throw new Exception('Method not allowed: ' . $method);
+        }
+        return $this->setQueryParameter($this->method_map[$method], $parameters[0]);
+    }
 
-	public function setLocation($location)
-	{
-		return $this->setQueryParameter('l', $location);
-	}
+    /**
+     * retrieves the results from the L5M api
+     * @return array [JobResult, ...]
+     */
+    public function get($limit = 0)
+    {
+        if ($limit) {
+            $this->setLimit($limit);
+        }
+        return $this->getResults();
+    }
 
-	public function setRadius($radius)
-	{
-		return $this->setQueryParameter('r', $radius);
-	}
-	
-	public function setStart($start)
-	{
-		return $this->setQueryParameter('start', $start);
-	}
+    /**
+     * Calls the Lead5Meadia API and returns the results
+     * @return array
+     */
+    protected function getResults()
+    {
+        $payload = $this->client->request('GET', $this->base_url, [
+            'query' => $this->getQueryParameters(),
+        ]);
 
-	public function setLimit($limit)
-	{
-		return $this->setQueryParameter('limit', $limit);
-	}
+        $response = utf8_encode(trim($payload->getBody()->getContents()));
+        $results = json_decode($response);
 
-	public function setFormat($format)
-	{
-		return $this->setQueryParameter('format', $format);
-	}
+        if (!$this->resultsAreValid($results)) {
+            throw new Exception('Lead5Media Results are not valid: ' . $response);
+        }
+        return $results;
+    }
 
-	public function setChid($chid)
-	{
-		return $this->setQueryParameter('CHID', $chid);
-	}
+    /**
+     * Validates the results format
+     * @param  $results
+     * @return boolean
+     */
+    protected function resultsAreValid($results)
+    {
+        return true;
+        return is_object($results)
+            && isset($results->jobs)
+            && is_array($results->jobs)
+        ;
+    }
 
-	public function setHighlight($highlight)
-	{
-		return $this->setQueryParameter('highlight', $highlight);
-	}
+    /**
+     * returns the query parameters
+     * @return array 
+     */
+    public function getQueryParameters()
+    {
+        return $this->query_parameters;
+    }
 
-	public function setSorting($sorting)
-	{
-		return $this->setQueryParameter('s', $sorting);
-	}
-
-	public function setAge($age)
-	{
-		return $this->setQueryParameter('a', $age);
-	}
-
-	public function getQueryParameters()
-	{
-		return $this->query_parameters;
-	}
-
-	protected function setCid($cid)
-	{
-		$this->setQueryParameter('CID', $cid);
-	}
-
-	protected function setQueryParameter($key, $value)
-	{
-		if (array_key_exists($key, $this->query_parameters)) {
-			$this->query_parameters[$key] = $value;
-		}
-		return $this;
-	}
-
-	private function request()
-	{
-		return $this->client->request('GET', $this->base_url, [
-				'query'	=> $this->getQueryParameters(),
-			]);
-	}
-
+    /**
+     * Sets a query paramaeter
+     * @param string $key
+     * @param mixed $value
+     * @return  self
+     */
+    protected function setQueryParameter($key, $value)
+    {
+        if (array_key_exists($key, $this->query_parameters)) {
+            $this->query_parameters[$key] = $value;
+        }
+        return $this;
+    }
 }
