@@ -3,20 +3,31 @@
     "description": "Simple PHP wrapper for Lead5Media Syndicated Job Feed API",
     "type": "library",
     "license": "MIT",
-    "require": {
-        "guzzlehttp/guzzle": "~6.0"
-    },
+    "keywords": [
+        "lead5media"
+    ],
     "authors": [
         {
             "name": "Bogdan Cismariu",
             "email": "bogdan.cismariu@gmail.com"
         }
     ],
+    "require": {
+        "guzzlehttp/guzzle": "~6.0"
+    },
+    "require-dev": {
+        "mockery/mockery": ">=0.9.4"
+    },
     "minimum-stability": "dev",
     "autoload": {
     	"psr-4": {
     		"Bcismariu\\Lead5Media\\": "src/"
     	}
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bcismariu\\Lead5Media\\Tests\\": "tests/"
+        }
     }
 }
 
